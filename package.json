@@ -4,7 +4,6 @@
   "description": "Mouse tracking for Windows",
   "main": "index.js",
   "scripts": {
-    "test-rebuild": "pangyp rebuild --msvs_version=2013",
     "test": "node test/parallel-destroy && node test/parallel-unref && node test/sequence-destroy && node test/sequence-unref"
   },
   "repository": {
@@ -29,8 +28,5 @@
   "dependencies": {
     "bindings": "^1.2.1",
     "nan": "^1.8.4"
-  },
-  "devDependencies": {
-    "pangyp": "^2.2.0"
   }
 }
