@@ -1,0 +1,32 @@
+{
+  "name": "win-mouse",
+  "version": "1.0.0",
+  "description": "Mouse tracking for windows",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/parallel-destroy && node test/parallel-unref && node test/sequence-destroy && node test/sequence-unref"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kapetan/win-mouse"
+  },
+  "keywords": [
+    "track",
+    "mouse",
+    "events",
+    "windows",
+    "native",
+    "screen",
+    "display",
+    "position"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kapetan/win-mouse/issues"
+  },
+  "homepage": "https://github.com/kapetan/win-mouse",
+  "dependencies": {
+    "bindings": "^1.2.1",
+    "nan": "^1.8.4"
+  }
+}
