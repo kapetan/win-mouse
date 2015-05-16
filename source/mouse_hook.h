@@ -1,3 +1,7 @@
+#ifndef _MOUSE_HOOK_H
+#define _MOUSE_HOOK_H
+
+#include <uv.h>
 #include <node.h>
 #include <Windows.h>
 #include <list>
@@ -25,6 +29,7 @@ class MouseHookManager {
 
 		void _Run();
 		void _HandleEvent(WPARAM, POINT);
+
 	private:
 		bool running;
 		DWORD thread_id;
@@ -39,3 +44,5 @@ class MouseHookManager {
 		
 		void Stop();
 };
+
+#endif

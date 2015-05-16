@@ -1,7 +1,7 @@
 {
   "name": "win-mouse",
   "version": "1.0.0",
-  "description": "Mouse tracking for windows",
+  "description": "Mouse tracking for Windows",
   "main": "index.js",
   "scripts": {
     "test": "node test/parallel-destroy && node test/parallel-unref && node test/sequence-destroy && node test/sequence-unref"
