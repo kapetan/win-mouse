@@ -4,7 +4,8 @@
   "description": "Mouse tracking for Windows",
   "main": "index.js",
   "scripts": {
-    "test": "node test/parallel-destroy && node test/parallel-unref && node test/sequence-destroy && node test/sequence-unref"
+    "test-node": "test\\run.bat node",
+    "test-iojs": "test\\run.bat iojs"
   },
   "repository": {
     "type": "git",

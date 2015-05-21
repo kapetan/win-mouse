@@ -4,13 +4,15 @@ environment:
   # node.js
   - nodejs_version: "0.10"
   - nodejs_version: "0.12"
+  # io.js
+  - nodejs_version: "2"
 
 # Install scripts. (runs after repo cloning)
 install:
   # Get the latest stable version of Node.js or io.js
   - ps: Install-Product node $env:nodejs_version
   # install modules
-  - npm install
+  - npm install --msvs_version=2013
 
 # Post-install test scripts.
 test_script:
@@ -18,7 +20,7 @@ test_script:
   - node --version
   - npm --version
   # run tests
-  - npm test
+  - IF %nodejs_version% EQU 2 (npm run test-iojs) ELSE (npm run test-node)
 
 # Don't actually build.
 build: off
