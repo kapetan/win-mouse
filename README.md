@@ -4,7 +4,7 @@
 
 Mouse tracking for Windows. Receive the screen position of various mouse events. The events are also emitted while another application is in the foreground.
 
-Tested in Windows Vista with node version `0.10` and `0.12`.
+Tested in Windows Vista with node versions `0.10` and `0.12`, and latest `iojs`.
 
 	npm install win-mouse
 
