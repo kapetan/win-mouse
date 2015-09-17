@@ -1,7 +1,6 @@
 #ifndef _MOUSE_H
 #define _MOUSE_H
 
-#include <node_object_wrap.h>
 #include <nan.h>
 
 #include "mouse_hook.h"
@@ -14,10 +13,10 @@ struct MouseEvent {
 	WPARAM type;
 };
 
-class Mouse : public node::ObjectWrap {
+class Mouse : public Nan::ObjectWrap {
 	public:
 		static void Initialize(Handle<Object> exports);
-		static Persistent<Function> constructor;
+		static Nan::Persistent<Function> constructor;
 
 		void Stop();
 		void HandleEvent(WPARAM, POINT);
@@ -26,12 +25,12 @@ class Mouse : public node::ObjectWrap {
 	private:
 		MouseHookRef hook_ref;
 		MouseEvent* event;
-		NanCallback* event_callback;
+		Nan::Callback* event_callback;
 		uv_async_t* async;
 		uv_mutex_t lock;
 		bool stopped;
 
-		explicit Mouse(NanCallback*);
+		explicit Mouse(Nan::Callback*);
 		~Mouse();
 
 		static NAN_METHOD(New);

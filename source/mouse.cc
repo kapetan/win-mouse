@@ -1,5 +1,11 @@
 #include "mouse.h"
 
+const char* LEFT_DOWN = "left-down";
+const char* LEFT_UP = "left-up";
+const char* RIGHT_DOWN = "right-down";
+const char* RIGHT_UP = "right-up";
+const char* MOVE = "move";
+
 bool IsMouseEvent(WPARAM type) {
 	return type == WM_LBUTTONDOWN ||
 		type == WM_LBUTTONUP ||
@@ -23,9 +29,9 @@ void OnClose(uv_handle_t* handle) {
 	delete async;
 }
 
-Persistent<Function> Mouse::constructor;
+Nan::Persistent<Function> Mouse::constructor;
 
-Mouse::Mouse(NanCallback* callback) {
+Mouse::Mouse(Nan::Callback* callback) {
 	async = new uv_async_t;
 	async->data = this;
 
@@ -47,18 +53,18 @@ Mouse::~Mouse() {
 }
 
 void Mouse::Initialize(Handle<Object> exports) {
-	NanScope();
+	Nan::HandleScope();
 
-	Local<FunctionTemplate> tpl = NanNew<FunctionTemplate>(Mouse::New);
-	tpl->SetClassName(NanNew<String>("Mouse"));
+	Local<FunctionTemplate> tpl = Nan::New<FunctionTemplate>(Mouse::New);
+	tpl->SetClassName(Nan::New<String>("Mouse").ToLocalChecked());
 	tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-	NODE_SET_PROTOTYPE_METHOD(tpl, "destroy", Mouse::Destroy);
-	NODE_SET_PROTOTYPE_METHOD(tpl, "ref", Mouse::AddRef);
-	NODE_SET_PROTOTYPE_METHOD(tpl, "unref", Mouse::RemoveRef);
+	Nan::SetPrototypeMethod(tpl, "destroy", Mouse::Destroy);
+	Nan::SetPrototypeMethod(tpl, "ref", Mouse::AddRef);
+	Nan::SetPrototypeMethod(tpl, "unref", Mouse::RemoveRef);
 
-	NanAssignPersistent(Mouse::constructor, tpl->GetFunction());
-	exports->Set(NanNew<String>("Mouse"), tpl->GetFunction());
+	Mouse::constructor.Reset(tpl->GetFunction());
+	exports->Set(Nan::New<String>("Mouse").ToLocalChecked(), tpl->GetFunction());
 }
 
 void Mouse::Stop() {
@@ -82,7 +88,7 @@ void Mouse::HandleEvent(WPARAM type, POINT point) {
 void Mouse::HandleSend() {
 	if(stopped) return;
 
-	NanScope();
+	Nan::HandleScope();
 
 	uv_mutex_lock(&lock);
 	MouseEvent e = {
@@ -92,59 +98,51 @@ void Mouse::HandleSend() {
 	};
 	uv_mutex_unlock(&lock);
 
-	Local<String> name;
+	const char* name;
 
-	if(e.type == WM_LBUTTONDOWN) name = NanNew<String>("left-down");
-	if(e.type == WM_LBUTTONUP) name = NanNew<String>("left-up");
-	if(e.type == WM_RBUTTONDOWN) name = NanNew<String>("right-down");
-	if(e.type == WM_RBUTTONUP) name = NanNew<String>("right-up");
-	if(e.type == WM_MOUSEMOVE) name = NanNew<String>("move");
+	if(e.type == WM_LBUTTONDOWN) name = LEFT_DOWN;
+	if(e.type == WM_LBUTTONUP) name = LEFT_UP;
+	if(e.type == WM_RBUTTONDOWN) name = RIGHT_DOWN;
+	if(e.type == WM_RBUTTONUP) name = RIGHT_UP;
+	if(e.type == WM_MOUSEMOVE) name = MOVE;
 
 	Local<Value> argv[] = {
-		name,
-		NanNew<Number>(e.x),
-		NanNew<Number>(e.y)
+		Nan::New<String>(name).ToLocalChecked(),
+		Nan::New<Number>(e.x),
+		Nan::New<Number>(e.y)
 	};
 
 	event_callback->Call(3, argv);
 }
 
 NAN_METHOD(Mouse::New) {
-	NanScope();
-
-	NanCallback* callback = new NanCallback(args[0].As<Function>());
+	Nan::Callback* callback = new Nan::Callback(info[0].As<Function>());
 
 	Mouse* mouse = new Mouse(callback);
-	mouse->Wrap(args.This());
+	mouse->Wrap(info.This());
 	mouse->Ref();
 
-	NanReturnValue(args.This());
+	info.GetReturnValue().Set(info.This());
 }
 
 NAN_METHOD(Mouse::Destroy) {
-	NanScope();
-
-	Mouse* mouse = ObjectWrap::Unwrap<Mouse>(args.Holder());
+	Mouse* mouse = Nan::ObjectWrap::Unwrap<Mouse>(info.Holder());
 	mouse->Stop();
 	mouse->Unref();
 
-	NanReturnUndefined();
+	info.GetReturnValue().SetUndefined();
 }
 
 NAN_METHOD(Mouse::AddRef) {
-	NanScope();
-
-	Mouse* mouse = ObjectWrap::Unwrap<Mouse>(args.Holder());
+	Mouse* mouse = ObjectWrap::Unwrap<Mouse>(info.Holder());
 	uv_ref((uv_handle_t*) mouse->async);
 
-	NanReturnUndefined();
+	info.GetReturnValue().SetUndefined();
 }
 
 NAN_METHOD(Mouse::RemoveRef) {
-	NanScope();
-
-	Mouse* mouse = ObjectWrap::Unwrap<Mouse>(args.Holder());
+	Mouse* mouse = ObjectWrap::Unwrap<Mouse>(info.Holder());
 	uv_unref((uv_handle_t*) mouse->async);
 
-	NanReturnUndefined();
+	info.GetReturnValue().SetUndefined();
 }

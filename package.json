@@ -28,6 +28,6 @@
   "homepage": "https://github.com/kapetan/win-mouse",
   "dependencies": {
     "bindings": "^1.2.1",
-    "nan": "^1.8.4"
+    "nan": "^2.0.9"
   }
 }
