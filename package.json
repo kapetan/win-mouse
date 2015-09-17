@@ -1,6 +1,6 @@
 {
   "name": "win-mouse",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Mouse tracking for Windows",
   "main": "index.js",
   "scripts": {
