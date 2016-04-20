@@ -4,9 +4,10 @@ environment:
   # node.js
   - nodejs_version: "0.10"
   - nodejs_version: "0.12"
-  # io.js
   - nodejs_version: "2"
   - nodejs_version: "3"
+  - nodejs_version: "4"
+  - nodejs_version: "5"
 
 # Install scripts. (runs after repo cloning)
 install:
@@ -21,7 +22,7 @@ test_script:
   - node --version
   - npm --version
   # run tests
-  - IF %nodejs_version% GEQ 1 (npm run test-iojs) ELSE (npm run test-node)
+  - IF %nodejs_version% LSS 1 (npm run test-node) ELSE (IF %nodejs_version% LSS 4 (npm run test-iojs) ELSE (npm run test-node))
 
 # Don't actually build.
 build: off
