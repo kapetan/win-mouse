@@ -53,7 +53,7 @@ Mouse::~Mouse() {
 }
 
 void Mouse::Initialize(Handle<Object> exports) {
-	Nan::HandleScope();
+	Nan::HandleScope scope;
 
 	Local<FunctionTemplate> tpl = Nan::New<FunctionTemplate>(Mouse::New);
 	tpl->SetClassName(Nan::New<String>("Mouse").ToLocalChecked());
@@ -88,7 +88,7 @@ void Mouse::HandleEvent(WPARAM type, POINT point) {
 void Mouse::HandleSend() {
 	if(stopped) return;
 
-	Nan::HandleScope();
+	Nan::HandleScope scope;
 
 	uv_mutex_lock(&lock);
 	MouseEvent e = {
