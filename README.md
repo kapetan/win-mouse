@@ -15,7 +15,7 @@ The module returns an event emitter instance.
 ```javascript
 var mouse = require('win-mouse')();
 
-mouse.on('move', fuction(x, y) {
+mouse.on('move', function(x, y) {
 	console.log(x, y);
 });
 ```
