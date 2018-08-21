@@ -13,6 +13,8 @@ struct MouseEvent {
 	WPARAM type;
 };
 
+const unsigned int BUFFER_SIZE = 10;
+
 class Mouse : public Nan::ObjectWrap {
 	public:
 		static void Initialize(Handle<Object> exports);
@@ -24,7 +26,9 @@ class Mouse : public Nan::ObjectWrap {
 
 	private:
 		MouseHookRef hook_ref;
-		MouseEvent* event;
+		MouseEvent* eventBuffer[BUFFER_SIZE];
+		unsigned int readIndex;
+		unsigned int writeIndex;
 		Nan::Callback* event_callback;
 		uv_async_t* async;
 		uv_mutex_t lock;
