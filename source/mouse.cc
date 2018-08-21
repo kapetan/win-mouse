@@ -38,6 +38,7 @@ Mouse::Mouse(Nan::Callback* callback) {
 	for (size_t i = 0; i < BUFFER_SIZE; i++) {
 		eventBuffer[i] = new MouseEvent();
 	}
+
 	readIndex = 0;
 	writeIndex = 0;
 
@@ -53,10 +54,11 @@ Mouse::Mouse(Nan::Callback* callback) {
 Mouse::~Mouse() {
 	Stop();
 	uv_mutex_destroy(&lock);
+	delete event_callback;
+
 	for (size_t i = 0; i < BUFFER_SIZE; i++) {
 		delete eventBuffer[i];
 	}
-	delete event_callback;
 }
 
 void Mouse::Initialize(Handle<Object> exports) {
@@ -99,12 +101,12 @@ void Mouse::HandleSend() {
 	Nan::HandleScope scope;
 
 	uv_mutex_lock(&lock);
-	while (readIndex != writeIndex)
-	{
+
+	while (readIndex != writeIndex) {
 		MouseEvent e = {
-		eventBuffer[readIndex]->x,
-		eventBuffer[readIndex]->y,
-		eventBuffer[readIndex]->type
+			eventBuffer[readIndex]->x,
+			eventBuffer[readIndex]->y,
+			eventBuffer[readIndex]->type
 		};
 		readIndex = (readIndex + 1) % BUFFER_SIZE;
 		const char* name;
@@ -123,6 +125,7 @@ void Mouse::HandleSend() {
 
 		event_callback->Call(3, argv);
 	}
+
 	uv_mutex_unlock(&lock);
 }
 
