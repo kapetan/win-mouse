@@ -30,6 +30,7 @@ class Mouse : public Nan::ObjectWrap {
 		unsigned int readIndex;
 		unsigned int writeIndex;
 		Nan::Callback* event_callback;
+		Nan::AsyncResource* async_resource;
 		uv_async_t* async;
 		uv_mutex_t lock;
 		bool stopped;

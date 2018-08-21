@@ -43,6 +43,7 @@ Mouse::Mouse(Nan::Callback* callback) {
 	writeIndex = 0;
 
 	event_callback = callback;
+	async_resource = new Nan::AsyncResource("win-mouse:Mouse");
 	stopped = false;
 
 	uv_async_init(uv_default_loop(), async, OnSend);
@@ -55,6 +56,7 @@ Mouse::~Mouse() {
 	Stop();
 	uv_mutex_destroy(&lock);
 	delete event_callback;
+	delete async_resource;
 
 	for (size_t i = 0; i < BUFFER_SIZE; i++) {
 		delete eventBuffer[i];
@@ -123,7 +125,7 @@ void Mouse::HandleSend() {
 			Nan::New<Number>(e.y)
 		};
 
-		event_callback->Call(3, argv);
+		event_callback->Call(3, argv, async_resource);
 	}
 
 	uv_mutex_unlock(&lock);
