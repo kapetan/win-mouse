@@ -35,7 +35,12 @@ Mouse::Mouse(Nan::Callback* callback) {
 	async = new uv_async_t;
 	async->data = this;
 
-	event = new MouseEvent();
+	for (size_t i = 0; i < BUFFER_SIZE; i++) {
+		eventBuffer[i] = new MouseEvent();
+	}
+	readIndex = 0;
+	writeIndex = 0;
+
 	event_callback = callback;
 	stopped = false;
 
@@ -48,7 +53,9 @@ Mouse::Mouse(Nan::Callback* callback) {
 Mouse::~Mouse() {
 	Stop();
 	uv_mutex_destroy(&lock);
-	delete event;
+	for (size_t i = 0; i < BUFFER_SIZE; i++) {
+		delete eventBuffer[i];
+	}
 	delete event_callback;
 }
 
@@ -78,11 +85,12 @@ void Mouse::Stop() {
 void Mouse::HandleEvent(WPARAM type, POINT point) {
 	if(!IsMouseEvent(type)) return;
 	uv_mutex_lock(&lock);
-	event->x = point.x;
-	event->y = point.y;
-	event->type = type;
-	uv_mutex_unlock(&lock);
+	eventBuffer[writeIndex]->x = point.x;
+	eventBuffer[writeIndex]->y = point.y;
+	eventBuffer[writeIndex]->type = type;
+	writeIndex = (writeIndex + 1) % BUFFER_SIZE;
 	uv_async_send(async);
+	uv_mutex_unlock(&lock);
 }
 
 void Mouse::HandleSend() {
@@ -91,28 +99,31 @@ void Mouse::HandleSend() {
 	Nan::HandleScope scope;
 
 	uv_mutex_lock(&lock);
-	MouseEvent e = {
-		event->x,
-		event->y,
-		event->type
-	};
+	while (readIndex != writeIndex)
+	{
+		MouseEvent e = {
+		eventBuffer[readIndex]->x,
+		eventBuffer[readIndex]->y,
+		eventBuffer[readIndex]->type
+		};
+		readIndex = (readIndex + 1) % BUFFER_SIZE;
+		const char* name;
+
+		if (e.type == WM_LBUTTONDOWN) name = LEFT_DOWN;
+		if (e.type == WM_LBUTTONUP) name = LEFT_UP;
+		if (e.type == WM_RBUTTONDOWN) name = RIGHT_DOWN;
+		if (e.type == WM_RBUTTONUP) name = RIGHT_UP;
+		if (e.type == WM_MOUSEMOVE) name = MOVE;
+
+		Local<Value> argv[] = {
+			Nan::New<String>(name).ToLocalChecked(),
+			Nan::New<Number>(e.x),
+			Nan::New<Number>(e.y)
+		};
+
+		event_callback->Call(3, argv);
+	}
 	uv_mutex_unlock(&lock);
-
-	const char* name;
-
-	if(e.type == WM_LBUTTONDOWN) name = LEFT_DOWN;
-	if(e.type == WM_LBUTTONUP) name = LEFT_UP;
-	if(e.type == WM_RBUTTONDOWN) name = RIGHT_DOWN;
-	if(e.type == WM_RBUTTONUP) name = RIGHT_UP;
-	if(e.type == WM_MOUSEMOVE) name = MOVE;
-
-	Local<Value> argv[] = {
-		Nan::New<String>(name).ToLocalChecked(),
-		Nan::New<Number>(e.x),
-		Nan::New<Number>(e.y)
-	};
-
-	event_callback->Call(3, argv);
 }
 
 NAN_METHOD(Mouse::New) {
