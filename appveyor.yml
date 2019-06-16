@@ -19,7 +19,7 @@ install:
   # Get the latest stable version of Node.js or io.js
   - ps: Install-Product node $env:nodejs_version
   # install modules
-  - npm install --msvs_version=2013
+  - IF %nodejs_version% LSS 9 (npm install --msvs_version=2013) ELSE (npm install --msvs_version=2015)
 
 # Post-install test scripts.
 test_script:
