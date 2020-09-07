@@ -1,7 +1,5 @@
 #include "mouse.h"
 
-void Initialize(Local<Object> exports) {
-	Mouse::Initialize(exports);
+NODE_MODULE_INIT() {
+  Mouse::Initialize(exports, module, context);
 }
-
-NODE_MODULE(addon, Initialize)

@@ -4,8 +4,7 @@
   "description": "Mouse tracking for Windows",
   "main": "index.js",
   "scripts": {
-    "test-node": "test\\run.bat node",
-    "test-iojs": "test\\run.bat iojs"
+    "test": "node test/parallel-destroy && node test/parallel-unref && node test/sequence-destroy && node test/sequence-unref"
   },
   "repository": {
     "type": "git",
@@ -28,7 +27,7 @@
   "homepage": "https://github.com/kapetan/win-mouse",
   "dependencies": {
     "bindings": "^1.5.0",
-    "nan": "^2.13.2"
+    "nan": "^2.14.1"
   },
   "os": [
     "win32"

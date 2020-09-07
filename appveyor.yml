@@ -13,6 +13,8 @@ environment:
   - nodejs_version: "10"
   - nodejs_version: "11"
   - nodejs_version: "12"
+  - nodejs_version: "13"
+  - nodejs_version: "14"
 
 # Install scripts. (runs after repo cloning)
 install:
@@ -27,7 +29,7 @@ test_script:
   - node --version
   - npm --version
   # run tests
-  - IF %nodejs_version% LSS 1 (npm run test-node) ELSE (IF %nodejs_version% LSS 4 (npm run test-iojs) ELSE (npm run test-node))
+  - npm test
 
 # Don't actually build.
 build: off
