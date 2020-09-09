@@ -56,7 +56,12 @@ Mouse::~Mouse() {
 	Stop();
 	uv_mutex_destroy(&lock);
 	delete event_callback;
-	delete async_resource;
+
+	// HACK: Sometimes deleting async resource segfaults.
+	// Probably related to https://github.com/nodejs/nan/issues/772
+	if (!Nan::GetCurrentContext().IsEmpty()) {
+		delete async_resource;
+	}
 
 	for (size_t i = 0; i < BUFFER_SIZE; i++) {
 		delete eventBuffer[i];
@@ -74,39 +79,46 @@ void Mouse::Initialize(Local<Object> exports, Local<Value> module, Local<Context
 	Nan::SetPrototypeMethod(tpl, "ref", Mouse::AddRef);
 	Nan::SetPrototypeMethod(tpl, "unref", Mouse::RemoveRef);
 
-	Mouse::constructor.Reset();
+	Mouse::constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
 	exports->Set(context,
 		Nan::New("Mouse").ToLocalChecked(),
 		Nan::GetFunction(tpl).ToLocalChecked());
 }
 
 void Mouse::Stop() {
-	if(stopped)	return;
-	stopped = true;
+	uv_mutex_lock(&lock);
 
-	MouseHookUnregister(hook_ref);
-	uv_close((uv_handle_t*) async, OnClose);
+	if (!stopped) {
+		stopped = true;
+		MouseHookUnregister(hook_ref);
+		uv_close((uv_handle_t*) async, OnClose);
+	}
+
+	uv_mutex_unlock(&lock);
 }
 
 void Mouse::HandleEvent(WPARAM type, POINT point) {
-	if(!IsMouseEvent(type)) return;
+	if(!IsMouseEvent(type) || stopped) return;
+
 	uv_mutex_lock(&lock);
-	eventBuffer[writeIndex]->x = point.x;
-	eventBuffer[writeIndex]->y = point.y;
-	eventBuffer[writeIndex]->type = type;
-	writeIndex = (writeIndex + 1) % BUFFER_SIZE;
-	uv_async_send(async);
+
+	if (!stopped) {
+		eventBuffer[writeIndex]->x = point.x;
+		eventBuffer[writeIndex]->y = point.y;
+		eventBuffer[writeIndex]->type = type;
+		writeIndex = (writeIndex + 1) % BUFFER_SIZE;
+		uv_async_send(async);
+	}
+
 	uv_mutex_unlock(&lock);
 }
 
 void Mouse::HandleSend() {
-	if(stopped) return;
-
 	Nan::HandleScope scope;
 
 	uv_mutex_lock(&lock);
 
-	while (readIndex != writeIndex) {
+	while (readIndex != writeIndex && !stopped) {
 		MouseEvent e = {
 			eventBuffer[readIndex]->x,
 			eventBuffer[readIndex]->y,
@@ -138,7 +150,6 @@ NAN_METHOD(Mouse::New) {
 
 	Mouse* mouse = new Mouse(callback);
 	mouse->Wrap(info.This());
-	mouse->Ref();
 
 	info.GetReturnValue().Set(info.This());
 }
@@ -146,7 +157,6 @@ NAN_METHOD(Mouse::New) {
 NAN_METHOD(Mouse::Destroy) {
 	Mouse* mouse = Nan::ObjectWrap::Unwrap<Mouse>(info.Holder());
 	mouse->Stop();
-	mouse->Unref();
 
 	info.GetReturnValue().SetUndefined();
 }

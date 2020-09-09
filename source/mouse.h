@@ -33,7 +33,7 @@ class Mouse : public Nan::ObjectWrap {
 		Nan::AsyncResource* async_resource;
 		uv_async_t* async;
 		uv_mutex_t lock;
-		bool stopped;
+		volatile bool stopped;
 
 		explicit Mouse(Nan::Callback*);
 		~Mouse();
