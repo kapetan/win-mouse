@@ -4,6 +4,8 @@ const char* LEFT_DOWN = "left-down";
 const char* LEFT_UP = "left-up";
 const char* RIGHT_DOWN = "right-down";
 const char* RIGHT_UP = "right-up";
+const char* MIDDLE_DOWN = "middle-down";
+const char* MIDDLE_UP = "middle-up";
 const char* MOVE = "move";
 
 bool IsMouseEvent(WPARAM type) {
@@ -11,6 +13,8 @@ bool IsMouseEvent(WPARAM type) {
 		type == WM_LBUTTONUP ||
 		type == WM_RBUTTONDOWN ||
 		type == WM_RBUTTONUP ||
+		type == WM_MBUTTONDOWN ||
+		type == WM_MBUTTONUP ||
 		type == WM_MOUSEMOVE;
 }
 
@@ -131,6 +135,8 @@ void Mouse::HandleSend() {
 		if (e.type == WM_LBUTTONUP) name = LEFT_UP;
 		if (e.type == WM_RBUTTONDOWN) name = RIGHT_DOWN;
 		if (e.type == WM_RBUTTONUP) name = RIGHT_UP;
+		if (e.type == WM_MBUTTONDOWN) name = MIDDLE_DOWN;
+		if (e.type == WM_MBUTTONUP) name = MIDDLE_UP;
 		if (e.type == WM_MOUSEMOVE) name = MOVE;
 
 		Local<Value> argv[] = {
